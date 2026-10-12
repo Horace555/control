@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0c1723" />
-    <meta name="description" content="用語音或按鈕將三組燈泡指令發布到 MQTT 主題 w6。" />
-    <title>語音燈泡控制台</title>
+    <meta name="description" content="用語音或按鈕將燈泡、電風扇與冷氣指令發布到 MQTT 主題 w6。" />
+    <title>語音設備控制台</title>
     <link rel="stylesheet" href="styles.css" />
     <script defer src="https://unpkg.com/mqtt@5.16.0/dist/mqtt.min.js"></script>
-    <script defer src="app.js"></script>
+    <script defer src="app.js?v=devices-20261012"></script>
   </head>
   <body>
     <div class="page-shell">
@@ -26,8 +26,8 @@
         <section class="intro" aria-labelledby="page-title">
           <div>
             <p class="eyebrow">SMART HOME CONTROL PANEL</p>
-            <h1 id="page-title">說出指令，<br /><span>點亮你的燈。</span></h1>
-            <p class="intro-copy">選擇一顆燈泡手動發送，或開啟語音控制，說出「打開燈泡 A、B、C」。</p>
+            <h1 id="page-title">說出指令，<br /><span>啟動你的設備。</span></h1>
+            <p class="intro-copy">選擇設備手動發送，或開啟語音控制，說出「打開燈泡」、「打開電風扇」或「打開冷氣」。</p>
           </div>
           <div class="connection-card" id="connection-card" data-state="connecting" role="status" aria-live="polite">
             <div class="connection-card-top">
@@ -45,7 +45,7 @@
           <div class="voice-copy">
             <p class="section-kicker">VOICE CONTROL</p>
             <h2 id="voice-title">用聲音，快速控制</h2>
-            <p id="voice-status" class="voice-status" role="status" aria-live="polite">點擊按鈕，允許麥克風後開始聆聽。</p>
+            <p id="voice-status" class="voice-status" role="status" aria-live="polite">按下按鈕並允許麥克風，然後說「打開燈泡」、「打開電風扇」或「打開冷氣」。</p>
             <p class="heard-text">最近聽到：<span id="heard-text">尚無辨識內容</span></p>
           </div>
           <button class="voice-button" id="voice-button" type="button" aria-pressed="false">
@@ -55,32 +55,32 @@
         </section>
 
         <section class="lights-section" aria-labelledby="lights-title">
-          <div class="section-heading"><div><p class="section-kicker">MANUAL CONTROL</p><h2 id="lights-title">三組燈泡指令</h2></div><span class="section-note">內容可自由修改，並會儲存在此瀏覽器</span></div>
+          <div class="section-heading"><div><p class="section-kicker">MANUAL CONTROL</p><h2 id="lights-title">三組設備指令</h2></div><span class="section-note">內容可自由修改，並會儲存在此瀏覽器</span></div>
           <div class="light-grid">
             <article class="light-card" data-channel="1">
               <div class="light-top"><span class="light-number">01</span><span class="light-symbol" aria-hidden="true">✳</span></div>
-              <div class="light-title-row"><h3>燈泡 A</h3><span class="light-tag">B1</span></div>
-              <p class="command-hint">語音：「打開燈泡A」</p>
+              <div class="light-title-row"><h3>燈泡</h3><span class="light-tag">B1</span></div>
+              <p class="command-hint">語音：「打開燈泡」</p>
               <label for="payload-1">發送內容</label>
-              <textarea id="payload-1" rows="2" spellcheck="false">打開燈泡A</textarea>
+              <textarea id="payload-1" rows="2" spellcheck="false">打開燈泡</textarea>
               <button class="send-button" data-send="1" type="button" disabled><span>發送 B1 到 w6</span><span aria-hidden="true">↗</span></button>
               <p class="card-feedback" data-feedback="1" aria-live="polite">等待 MQTT 連線</p>
             </article>
             <article class="light-card" data-channel="2">
               <div class="light-top"><span class="light-number">02</span><span class="light-symbol" aria-hidden="true">✳</span></div>
-              <div class="light-title-row"><h3>燈泡 B</h3><span class="light-tag">B2</span></div>
-              <p class="command-hint">語音：「打開燈泡B」</p>
+              <div class="light-title-row"><h3>電風扇</h3><span class="light-tag">B2</span></div>
+              <p class="command-hint">語音：「打開電風扇」</p>
               <label for="payload-2">發送內容</label>
-              <textarea id="payload-2" rows="2" spellcheck="false">打開燈泡B</textarea>
+              <textarea id="payload-2" rows="2" spellcheck="false">打開電風扇</textarea>
               <button class="send-button" data-send="2" type="button" disabled><span>發送 B2 到 w6</span><span aria-hidden="true">↗</span></button>
               <p class="card-feedback" data-feedback="2" aria-live="polite">等待 MQTT 連線</p>
             </article>
             <article class="light-card" data-channel="3">
               <div class="light-top"><span class="light-number">03</span><span class="light-symbol" aria-hidden="true">✳</span></div>
-              <div class="light-title-row"><h3>燈泡 C</h3><span class="light-tag">B3</span></div>
-              <p class="command-hint">語音：「打開燈泡C」</p>
+              <div class="light-title-row"><h3>冷氣</h3><span class="light-tag">B3</span></div>
+              <p class="command-hint">語音：「打開冷氣」</p>
               <label for="payload-3">發送內容</label>
-              <textarea id="payload-3" rows="2" spellcheck="false">打開燈泡C</textarea>
+              <textarea id="payload-3" rows="2" spellcheck="false">打開冷氣</textarea>
               <button class="send-button" data-send="3" type="button" disabled><span>發送 B3 到 w6</span><span aria-hidden="true">↗</span></button>
               <p class="card-feedback" data-feedback="3" aria-live="polite">等待 MQTT 連線</p>
             </article>
