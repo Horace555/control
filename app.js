@@ -4,7 +4,13 @@
   const BROKER_URL = "wss://broker.emqx.io:8084/mqtt";
   const TOPIC = "w6";
   const STORAGE_PREFIX = "mqtt-voice-light-payload-";
-  const CHANNEL_LABELS = ["A", "B", "C"];
+  const DEVICE_NAMES = ["燈泡", "電風扇", "冷氣"];
+  const COMMANDS = DEVICE_NAMES.map((name) => `打開${name}`);
+  const LEGACY_DEFAULTS = [
+    ["幫我打開燈泡1", "打開燈泡A"],
+    ["幫我打開燈泡2", "打開燈泡B"],
+    ["幫我打開燈泡3", "打開燈泡C"]
+  ];
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   const connectionCard = document.getElementById("connection-card");
@@ -57,7 +63,7 @@
   function restorePayload(number) {
     try {
       const saved = localStorage.getItem(`${STORAGE_PREFIX}${number}`);
-      if (saved === `幫我打開燈泡${number}`) {
+      if (LEGACY_DEFAULTS[number - 1].includes(saved)) {
         savePayload(number, inputs[number - 1].value);
       } else if (saved !== null) {
         inputs[number - 1].value = saved;
@@ -88,7 +94,7 @@
         }
         const time = new Intl.DateTimeFormat("zh-TW", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
         setFeedback(number, `${time} · 已發送`, "success");
-        lastPublished.textContent = `${time} · ${source === "voice" ? "語音" : "按鈕"} · 燈泡 ${CHANNEL_LABELS[number - 1]} → w6 · ${payload}`;
+        lastPublished.textContent = `${time} · ${source === "voice" ? "語音" : "按鈕"} · ${DEVICE_NAMES[number - 1]} → w6 · ${payload}`;
       });
     } catch {
       buttons[number - 1].disabled = !connected;
@@ -100,10 +106,10 @@
     const cleaned = transcript.normalize("NFKC")
       .replace(/[\s，。！？、,!.?：:;；「」『』"']/g, "")
       .replaceAll("帮", "幫").replaceAll("开", "開").replaceAll("灯", "燈")
-      .replaceAll("诶", "誒").toUpperCase();
-    const match = cleaned.match(/^(?:請)?(?:幫我)?(?:打開|開啟|開)燈泡([ABC欸誒比逼西])$/);
+      .replaceAll("电", "電").replaceAll("风", "風").replaceAll("气", "氣");
+    const match = cleaned.match(/^(?:請)?(?:幫我)?(?:打開|開啟|開)(燈泡|電風扇|冷氣)$/);
     if (!match) return null;
-    return { A: 1, 欸: 1, 誒: 1, B: 2, 比: 2, 逼: 2, C: 3, 西: 3 }[match[1]];
+    return DEVICE_NAMES.indexOf(match[1]) + 1;
   }
 
   function renderVoice() {
@@ -143,7 +149,7 @@
     recognition.onstart = () => {
       listening = true;
       seenResults = new Set();
-      voiceStatus.textContent = "正在聆聽…請說「打開燈泡A」等指令。";
+      voiceStatus.textContent = `正在聆聽…請說「${COMMANDS.join("」、「")}」。`;
       renderVoice();
     };
     recognition.onresult = (event) => {
@@ -163,11 +169,11 @@
           if (number) break;
         }
         if (!number) {
-          voiceStatus.textContent = "沒有對應的燈泡指令，請再說一次。";
+          voiceStatus.textContent = `沒有對應的設備指令，請說「${COMMANDS.join("」、「")}」。`;
         } else if (!connected) {
-          voiceStatus.textContent = `聽到燈泡 ${CHANNEL_LABELS[number - 1]}，但 MQTT 尚未連線，訊息未發送。`;
+          voiceStatus.textContent = `聽到${DEVICE_NAMES[number - 1]}，但 MQTT 尚未連線，訊息未發送。`;
         } else {
-          voiceStatus.textContent = `聽到燈泡 ${CHANNEL_LABELS[number - 1]}，正在發送。`;
+          voiceStatus.textContent = `聽到${DEVICE_NAMES[number - 1]}，正在發送。`;
           publish(number, "voice");
         }
       }
@@ -219,7 +225,7 @@
         protocolVersion: 4
       });
       client.on("connect", () => {
-        setConnection("connected", "已連線", "可以發送燈泡指令。連線中斷時會自動重連。");
+        setConnection("connected", "已連線", "可以發送設備指令。連線中斷時會自動重連。");
       });
       client.on("reconnect", () => setConnection("connecting", "重新連線中", "正在重新連接 broker.emqx.io…"));
       client.on("offline", () => setConnection("offline", "目前離線", "連線中斷，正在等待自動重連。"));
