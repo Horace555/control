@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0c1723" />
+    <meta name="description" content="用語音或按鈕將三組燈泡指令發布到 MQTT 主題 w6。" />
+    <title>語音燈泡控制台</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="https://unpkg.com/mqtt@5.16.0/dist/mqtt.min.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none"><path d="M16 3.5a9 9 0 0 0-5.3 16.3c1.6 1.2 2.3 2.6 2.3 4.2h6c0-1.6.7-3 2.3-4.2A9 9 0 0 0 16 3.5Z" stroke="currentColor" stroke-width="2"/><path d="M13 27h6M14.5 30h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+          <span>LIGHT / VOICE</span>
+        </div>
+        <div class="header-topic"><span>MQTT TOPIC</span><strong>w6</strong></div>
+      </header>
+
+      <main>
+        <section class="intro" aria-labelledby="page-title">
+          <div>
+            <p class="eyebrow">SMART HOME CONTROL PANEL</p>
+            <h1 id="page-title">說出指令，<br /><span>點亮你的燈。</span></h1>
+            <p class="intro-copy">選擇一顆燈泡手動發送，或開啟語音控制，說出「幫我打開燈泡 1、2、3」。</p>
+          </div>
+          <div class="connection-card" id="connection-card" data-state="connecting" role="status" aria-live="polite">
+            <div class="connection-card-top">
+              <span class="connection-label">伺服器連線</span>
+              <span class="signal-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+            </div>
+            <div class="connection-main"><span class="status-dot" aria-hidden="true"></span><strong id="connection-title">正在連線</strong></div>
+            <p id="connection-detail">正在連接 broker.emqx.io…</p>
+            <div class="connection-meta"><span>broker.emqx.io</span><span>WSS · 8084</span></div>
+          </div>
+        </section>
+
+        <section class="voice-panel" aria-labelledby="voice-title">
+          <div class="voice-visual" aria-hidden="true"><span class="voice-ring ring-one"></span><span class="voice-ring ring-two"></span><span class="voice-core">✦</span></div>
+          <div class="voice-copy">
+            <p class="section-kicker">VOICE CONTROL</p>
+            <h2 id="voice-title">用聲音，快速控制</h2>
+            <p id="voice-status" class="voice-status" role="status" aria-live="polite">點擊按鈕，允許麥克風後開始聆聽。</p>
+            <p class="heard-text">最近聽到：<span id="heard-text">尚無辨識內容</span></p>
+          </div>
+          <button class="voice-button" id="voice-button" type="button" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="2" width="6" height="13" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V22m-4 0h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span id="voice-button-label">開始語音控制</span>
+          </button>
+        </section>
+
+        <section class="lights-section" aria-labelledby="lights-title">
+          <div class="section-heading"><div><p class="section-kicker">MANUAL CONTROL</p><h2 id="lights-title">三組燈泡指令</h2></div><span class="section-note">內容可自由修改，並會儲存在此瀏覽器</span></div>
+          <div class="light-grid">
+            <article class="light-card" data-channel="1">
+              <div class="light-top"><span class="light-number">01</span><span class="light-symbol" aria-hidden="true">✳</span></div>
+              <div class="light-title-row"><h3>燈泡 1</h3><span class="light-tag">B1</span></div>
+              <p class="command-hint">語音：「幫我打開燈泡1」</p>
+              <label for="payload-1">發送內容</label>
+              <textarea id="payload-1" rows="2" spellcheck="false">幫我打開燈泡1</textarea>
+              <button class="send-button" data-send="1" type="button" disabled><span>發送 B1 到 w6</span><span aria-hidden="true">↗</span></button>
+              <p class="card-feedback" data-feedback="1" aria-live="polite">等待 MQTT 連線</p>
+            </article>
+            <article class="light-card" data-channel="2">
+              <div class="light-top"><span class="light-number">02</span><span class="light-symbol" aria-hidden="true">✳</span></div>
+              <div class="light-title-row"><h3>燈泡 2</h3><span class="light-tag">B2</span></div>
+              <p class="command-hint">語音：「幫我打開燈泡2」</p>
+              <label for="payload-2">發送內容</label>
+              <textarea id="payload-2" rows="2" spellcheck="false">幫我打開燈泡2</textarea>
+              <button class="send-button" data-send="2" type="button" disabled><span>發送 B2 到 w6</span><span aria-hidden="true">↗</span></button>
+              <p class="card-feedback" data-feedback="2" aria-live="polite">等待 MQTT 連線</p>
+            </article>
+            <article class="light-card" data-channel="3">
+              <div class="light-top"><span class="light-number">03</span><span class="light-symbol" aria-hidden="true">✳</span></div>
+              <div class="light-title-row"><h3>燈泡 3</h3><span class="light-tag">B3</span></div>
+              <p class="command-hint">語音：「幫我打開燈泡3」</p>
+              <label for="payload-3">發送內容</label>
+              <textarea id="payload-3" rows="2" spellcheck="false">幫我打開燈泡3</textarea>
+              <button class="send-button" data-send="3" type="button" disabled><span>發送 B3 到 w6</span><span aria-hidden="true">↗</span></button>
+              <p class="card-feedback" data-feedback="3" aria-live="polite">等待 MQTT 連線</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="activity" aria-labelledby="activity-title">
+          <div><p class="section-kicker">LATEST ACTIVITY</p><h2 id="activity-title">最近一次發送</h2></div>
+          <p id="last-published" role="status" aria-live="polite">尚未發送訊息</p>
+        </section>
+      </main>
+      <footer><span>MQTT VOICE LIGHT CONTROL</span><span>公開測試 Broker · 主題 w6 · QoS 0</span></footer>
+    </div>
+  </body>
+</html>
+
