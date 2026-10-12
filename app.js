@@ -4,6 +4,7 @@
   const BROKER_URL = "wss://broker.emqx.io:8084/mqtt";
   const TOPIC = "w6";
   const STORAGE_PREFIX = "mqtt-voice-light-payload-";
+  const CHANNEL_LABELS = ["A", "B", "C"];
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   const connectionCard = document.getElementById("connection-card");
@@ -56,7 +57,11 @@
   function restorePayload(number) {
     try {
       const saved = localStorage.getItem(`${STORAGE_PREFIX}${number}`);
-      if (saved !== null) inputs[number - 1].value = saved;
+      if (saved === `幫我打開燈泡${number}`) {
+        savePayload(number, inputs[number - 1].value);
+      } else if (saved !== null) {
+        inputs[number - 1].value = saved;
+      }
     } catch { /* Keep the HTML default. */ }
   }
 
@@ -83,7 +88,7 @@
         }
         const time = new Intl.DateTimeFormat("zh-TW", { hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(new Date());
         setFeedback(number, `${time} · 已發送`, "success");
-        lastPublished.textContent = `${time} · ${source === "voice" ? "語音" : "按鈕"} · 燈泡 ${number} → w6 · ${payload}`;
+        lastPublished.textContent = `${time} · ${source === "voice" ? "語音" : "按鈕"} · 燈泡 ${CHANNEL_LABELS[number - 1]} → w6 · ${payload}`;
       });
     } catch {
       buttons[number - 1].disabled = !connected;
@@ -94,10 +99,11 @@
   function parseCommand(transcript) {
     const cleaned = transcript.normalize("NFKC")
       .replace(/[\s，。！？、,!.?：:;；「」『』"']/g, "")
-      .replaceAll("帮", "幫").replaceAll("开", "開").replaceAll("灯", "燈");
-    const match = cleaned.match(/^(?:請)?(?:幫我)?(?:打開|開啟|開)燈泡([123一二三])$/);
+      .replaceAll("帮", "幫").replaceAll("开", "開").replaceAll("灯", "燈")
+      .replaceAll("诶", "誒").toUpperCase();
+    const match = cleaned.match(/^(?:請)?(?:幫我)?(?:打開|開啟|開)燈泡([ABC欸誒比逼西])$/);
     if (!match) return null;
-    return { "一": 1, "二": 2, "三": 3 }[match[1]] || Number(match[1]);
+    return { A: 1, 欸: 1, 誒: 1, B: 2, 比: 2, 逼: 2, C: 3, 西: 3 }[match[1]];
   }
 
   function renderVoice() {
@@ -137,7 +143,7 @@
     recognition.onstart = () => {
       listening = true;
       seenResults = new Set();
-      voiceStatus.textContent = "正在聆聽…請說「幫我打開燈泡1」等指令。";
+      voiceStatus.textContent = "正在聆聽…請說「打開燈泡A」等指令。";
       renderVoice();
     };
     recognition.onresult = (event) => {
@@ -159,9 +165,9 @@
         if (!number) {
           voiceStatus.textContent = "沒有對應的燈泡指令，請再說一次。";
         } else if (!connected) {
-          voiceStatus.textContent = `聽到燈泡 ${number}，但 MQTT 尚未連線，訊息未發送。`;
+          voiceStatus.textContent = `聽到燈泡 ${CHANNEL_LABELS[number - 1]}，但 MQTT 尚未連線，訊息未發送。`;
         } else {
-          voiceStatus.textContent = `聽到燈泡 ${number}，正在發送。`;
+          voiceStatus.textContent = `聽到燈泡 ${CHANNEL_LABELS[number - 1]}，正在發送。`;
           publish(number, "voice");
         }
       }
