@@ -171,7 +171,7 @@
         "not-allowed": "麥克風權限遭拒，請在瀏覽器允許麥克風。",
         "service-not-allowed": "語音辨識服務無法使用。",
         "audio-capture": "找不到可用的麥克風。",
-        "network": "語音辨識網路連線失敗，請稍後重試。"
+        "network": "語音辨識服務無法連線；請檢查網路，或改用 Chrome 開啟網站。"
       };
       if (event.error === "no-speech") {
         voiceStatus.textContent = "沒有聽到語音，正在重新聆聽…";
